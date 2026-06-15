@@ -52,4 +52,21 @@ describe "FastExcel text_width" do
     assert_equal(16.0, sheet.calculated_column_widths[0])
     assert_equal(8.0, sheet.calculated_column_widths[1])
   end
+
+  it "should track auto width only for written display text" do
+    workbook = FastExcel.open(constant_memory: false)
+    sheet = workbook.add_worksheet
+    sheet.auto_width = true
+
+    rich_string = FastExcel::RichString.new([
+      { text: "ab" },
+      { text: "cde" }
+    ])
+
+    sheet.write_value(0, 0, FastExcel::Formula.new("SUM(1,2)"))
+    sheet.write_value(0, 1, FastExcel::URL.new("https://x.test"))
+    sheet.write_value(0, 2, rich_string)
+
+    assert_equal({1 => 12.32, 2 => 4.4}, sheet.calculated_column_widths)
+  end
 end
