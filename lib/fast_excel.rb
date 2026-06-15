@@ -1,4 +1,5 @@
 require_relative './fast_excel/binding'
+require_relative './fast_excel/worksheet_pointer_builders'
 require 'set'
 
 # not used for now
@@ -65,7 +66,7 @@ module FastExcel
       elsif value.is_a?(FastExcel::URL)
         worksheet.write_url(row_number, cell_number, value.url, format)
       elsif value.is_a?(FastExcel::RichString)
-        worksheet.with_rich_string_pointer(value) do |rich_string|
+        Libxlsxwriter::WorksheetPointerBuilders.with_rich_string(value) do |rich_string|
           worksheet.write_rich_string(row_number, cell_number, rich_string, format)
         end
       else
@@ -596,42 +597,14 @@ module FastExcel
     end
 
     def set_h_pagebreaks(breaks)
-      with_pagebreak_pointer(breaks, :uint32, :write_array_of_uint32) do |pointer|
+      Libxlsxwriter::WorksheetPointerBuilders.with_horizontal_pagebreaks(breaks) do |pointer|
         Libxlsxwriter.worksheet_set_h_pagebreaks(self, pointer)
       end
     end
 
     def set_v_pagebreaks(breaks)
-      with_pagebreak_pointer(breaks, :uint16, :write_array_of_uint16) do |pointer|
+      Libxlsxwriter::WorksheetPointerBuilders.with_vertical_pagebreaks(breaks) do |pointer|
         Libxlsxwriter.worksheet_set_v_pagebreaks(self, pointer)
-      end
-    end
-
-    def with_rich_string_pointer(value)
-      strings = []
-      tuples = value.fragments.map do |fragment|
-        Libxlsxwriter::RichStringTuple.new.tap do |tuple|
-          strings << FFI::MemoryPointer.from_string(fragment[:text])
-          tuple[:format] = fragment[:format]&.to_ptr || FFI::Pointer::NULL
-          tuple[:string] = strings.last
-        end
-      end
-
-      FFI::MemoryPointer.new(:pointer, tuples.length + 1).tap do |pointer|
-        pointer.write_array_of_pointer(tuples.map(&:to_ptr) + [FFI::Pointer::NULL])
-        yield pointer
-      end
-    end
-
-    def with_pagebreak_pointer(breaks, pointer_type, writer)
-      return yield breaks if breaks.is_a?(FFI::Pointer)
-
-      breakpoints = breaks.to_a
-      breakpoints << 0 unless breakpoints.last == 0
-
-      FFI::MemoryPointer.new(pointer_type, breakpoints.size) do |pointer|
-        pointer.public_send(writer, breakpoints)
-        yield pointer
       end
     end
 

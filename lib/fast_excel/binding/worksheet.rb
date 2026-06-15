@@ -460,26 +460,11 @@ module Libxlsxwriter
     end
 
     def add_table(first_row, first_col, last_row, last_col, options = {})
-      strings = []
-      columns = Array(options[:columns]).map do |header|
-        TableColumn.new.tap do |column|
-          strings << FFI::MemoryPointer.from_string(header.to_s)
-          column[:header] = strings.last
-          column[:formula] = FFI::Pointer::NULL
-          column[:total_string] = FFI::Pointer::NULL
-          column[:header_format] = FFI::Pointer::NULL
-          column[:format] = FFI::Pointer::NULL
-        end
-      end
-      columns_pointer = FFI::Pointer::NULL
+      require_relative '../worksheet_pointer_builders'
 
-      unless columns.empty?
-        columns_pointer = FFI::MemoryPointer.new(:pointer, columns.length + 1)
-        columns_pointer.write_array_of_pointer(columns.map(&:to_ptr) + [FFI::Pointer::NULL])
+      Libxlsxwriter::WorksheetPointerBuilders.with_table_options(options) do |table_options|
+        Libxlsxwriter.worksheet_add_table(self, first_row, first_col, last_row, last_col, table_options.to_ptr)
       end
-
-      table_options = TableOptions.build(options, columns_pointer)
-      Libxlsxwriter.worksheet_add_table(self, first_row, first_col, last_row, last_col, table_options.to_ptr)
     end
   
     # @return [nil] 
