@@ -228,6 +228,19 @@ describe "FastExcel::WorksheetExt append_row" do
 
     assert_equal(ws[:vbreaks_count], 0)
 
+    ws.set_v_pagebreaks([20, 40, 60, 0])
+
+    assert_equal(ws[:vbreaks_count], 3)
+
+    ws.set_h_pagebreaks([10, 30])
+
+    assert_equal(ws[:hbreaks_count], 2)
+  end
+
+  it "supports pointer page breaks" do
+    workbook = FastExcel.open(constant_memory: false)
+    ws = workbook.add_worksheet
+
     breaks = [20, 40, 60, 20, 0]
     FFI::MemoryPointer.new(:uint16, breaks.size) do |buffer|
       buffer.write_array_of_uint16(breaks)

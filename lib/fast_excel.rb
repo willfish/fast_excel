@@ -539,6 +539,18 @@ module FastExcel
       append_row(values)
     end
 
+    def set_h_pagebreaks(breaks)
+      with_pagebreak_pointer(breaks, :uint32, :write_array_of_uint32) do |pointer|
+        Libxlsxwriter.worksheet_set_h_pagebreaks(self, pointer)
+      end
+    end
+
+    def set_v_pagebreaks(breaks)
+      with_pagebreak_pointer(breaks, :uint16, :write_array_of_uint16) do |pointer|
+        Libxlsxwriter.worksheet_set_v_pagebreaks(self, pointer)
+      end
+    end
+
     def with_rich_string_pointer(value)
       strings = []
       tuples = value.fragments.map do |fragment|
@@ -551,6 +563,18 @@ module FastExcel
 
       FFI::MemoryPointer.new(:pointer, tuples.length + 1).tap do |pointer|
         pointer.write_array_of_pointer(tuples.map(&:to_ptr) + [FFI::Pointer::NULL])
+        yield pointer
+      end
+    end
+
+    def with_pagebreak_pointer(breaks, pointer_type, writer)
+      return yield breaks if breaks.is_a?(FFI::Pointer)
+
+      breakpoints = breaks.to_a
+      breakpoints << 0 unless breakpoints.last == 0
+
+      FFI::MemoryPointer.new(pointer_type, breakpoints.size) do |pointer|
+        pointer.public_send(writer, breakpoints)
         yield pointer
       end
     end
