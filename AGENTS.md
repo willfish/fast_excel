@@ -81,6 +81,26 @@ Ruby API and `FastExcel` namespace, while publishing under the
   configured 95% gate. Avoid adding untested public API surface.
 - CI tests Ubuntu, macOS, and Windows across Ruby 2.7, 3.1, 3.3, and 3.4.
 
+## Performance Work
+
+- Performance issues exist to identify real options for speeding up or
+  modernising the XLSX writing stack. Do not close them with benchmark-only
+  scaffolding unless the measured outcome is an explicit no-go decision.
+- Every `perf:` PR must include:
+  - the production implementation change, not only a benchmark or profile,
+  - the exact benchmark command and environment used,
+  - before/after timings or allocation counts,
+  - workbook validity or output-equivalence evidence,
+  - focused regression tests for the affected behavior.
+- Treat CI performance checks as conservative regression gates. They should
+  catch large slowdowns and broken benchmark behavior, but they are not precise
+  enough to prove small wins on noisy shared runners.
+- Keep small performance claims out of README copy unless they are supported by
+  repeatable local measurements and a maintained validation command.
+- If profiling shows an idea does not improve end-to-end workbook generation,
+  document the numbers on the issue and close it as a measured no-go rather
+  than shipping unused complexity.
+
 ## Releases And Tags
 
 - Releases are tag-driven. Tags must use the `v` prefix, for example `v0.6.0`.
