@@ -216,6 +216,6 @@ describe "FastExcel::AttributeHelper" do
       PP.pp(format)
     end.first
 
-    assert_includes(output, ":font_size=>14")
+    assert_match(/(?:font_size: 14\.0|:font_size=>14(?:\.0)?)/, output)
   end
 end
