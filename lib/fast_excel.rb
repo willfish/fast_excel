@@ -431,6 +431,20 @@ module FastExcel
     end
   end
 
+  module FormatOptionHelper
+    def set(values)
+      values.each do |key, value|
+        writer = "#{key}="
+
+        raise ArgumentError, "Unknown format option #{key.inspect}" unless respond_to?(writer)
+
+        send(writer, value)
+      end
+
+      self
+    end
+  end
+
   module WorkbookExt
     include AttributeHelper
     attr_accessor :tmp_file, :is_open, :filename
@@ -678,6 +692,7 @@ module FastExcel
 
   module FormatExt
     include AttributeHelper
+    include FormatOptionHelper
 
     [:font_size, :underline, :font_script, :rotation, :indent, :pattern, :border].each do |prop|
       define_method(prop) do

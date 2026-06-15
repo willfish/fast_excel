@@ -201,6 +201,23 @@ describe "FastExcel::FormatExt border" do
 end
 
 describe "FastExcel::AttributeHelper" do
+  it "should set public writers on non-format wrappers" do
+    workbook = FastExcel.open(constant_memory: true)
+    worksheet = workbook.add_worksheet
+
+    worksheet.set(auto_width: true)
+
+    assert(worksheet.auto_width?)
+  end
+
+  it "should set raw fields on non-format wrappers" do
+    workbook = FastExcel.open(constant_memory: true)
+
+    workbook.set(active_sheet: 1)
+
+    assert_equal(1, workbook[:active_sheet])
+  end
+
   it "should expose fields as a hash" do
     workbook = FastExcel.open(constant_memory: true)
     format = workbook.add_format(font_size: 14)
@@ -217,5 +234,17 @@ describe "FastExcel::AttributeHelper" do
     end.first
 
     assert_match(/(?:font_size: 14\.0|:font_size=>14(?:\.0)?)/, output)
+  end
+end
+
+describe "FastExcel::FormatExt option normalization" do
+  it "rejects raw format struct fields through add_format options" do
+    workbook = FastExcel.open(constant_memory: true)
+
+    error = assert_raises(ArgumentError) do
+      workbook.add_format(text_h_align: 999)
+    end
+
+    assert_equal("Unknown format option :text_h_align", error.message)
   end
 end
