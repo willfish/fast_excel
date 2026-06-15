@@ -35,6 +35,20 @@ describe "FastExcel.lxw_time" do
   end
 end
 
+describe "FastExcel.lxw_date" do
+  it "should convert date values to libxlsxwriter datetime structs" do
+    date = Date.new(2026, 6, 15)
+    datetime = FastExcel.lxw_date(date)
+
+    assert_equal(2026, datetime[:year])
+    assert_equal(6, datetime[:month])
+    assert_equal(15, datetime[:day])
+    assert_equal(0, datetime[:hour])
+    assert_equal(0, datetime[:min])
+    assert_equal(0, datetime[:sec])
+  end
+end
+
 describe "FastExcel.write_value" do
 
   it "should save correct datetime" do

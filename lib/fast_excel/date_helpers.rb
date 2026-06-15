@@ -23,6 +23,17 @@ module FastExcel
     date
   end
 
+  def self.lxw_date(value)
+    date = Libxlsxwriter::Datetime.new
+    date[:year] = value.year
+    date[:month] = value.month
+    date[:day] = value.day
+    date[:hour] = 0
+    date[:min] = 0
+    date[:sec] = 0
+    date
+  end
+
   # seconds in 1 day
   XLSX_DATE_DAY = 86400.0
 

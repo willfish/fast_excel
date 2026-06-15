@@ -48,9 +48,9 @@ module FastExcel
             datetimes: measure_write { |index| DateTime.new(2026, 1, 1, 12, 30, 15) + Rational(index, 86_400) }
           },
           conversion_profiles: {
-            time_date_num: measure_conversion { |index| FastExcel.date_num(Time.utc(2026, 1, 1) + index) },
-            date_lxw_datetime: measure_conversion { |index| FastExcel.lxw_datetime(Date.new(2026, 1, 1).next_day(index).to_datetime) },
-            datetime_lxw_datetime: measure_conversion { |index| FastExcel.lxw_datetime(DateTime.new(2026, 1, 1, 12, 30, 15) + Rational(index, 86_400)) }
+            time_date_num: measure_conversion(prebuilt_times) { |value| FastExcel.date_num(value) },
+            date_to_lxw_date: measure_conversion(prebuilt_dates) { |value| FastExcel.lxw_date(value) },
+            datetime_to_lxw_datetime: measure_conversion(prebuilt_datetimes) { |value| FastExcel.lxw_datetime(value) }
           },
           writer_paths: writer_paths,
           interpretation: interpretation,
@@ -82,15 +82,13 @@ module FastExcel
         profile_hash(finished_at - started_at, before_gc, after_gc).merge(bytes: content.bytesize)
       end
 
-      def measure_conversion
-        iterations = rows * columns
-
+      def measure_conversion(values)
         GC.start
         before_gc = GC.stat
         started_at = monotonic_time
 
-        iterations.times do |index|
-          yield(index)
+        values.each do |value|
+          yield(value)
         end
 
         finished_at = monotonic_time
@@ -108,12 +106,26 @@ module FastExcel
         }
       end
 
+      def prebuilt_times
+        Array.new(rows * columns) { |index| Time.utc(2026, 1, 1) + index }
+      end
+
+      def prebuilt_dates
+        base = Date.new(2026, 1, 1)
+        Array.new(rows * columns) { |index| base.next_day(index) }
+      end
+
+      def prebuilt_datetimes
+        base = DateTime.new(2026, 1, 1, 12, 30, 15)
+        Array.new(rows * columns) { |index| base + Rational(index, 86_400) }
+      end
+
       def writer_paths
         {
           integers: "WorksheetValueWriter#write_cell -> Worksheet#write_number -> FFI :double -> libxlsxwriter worksheet_write_number",
           floats: "WorksheetValueWriter#write_cell -> Worksheet#write_number -> FFI :double -> libxlsxwriter worksheet_write_number",
           times: "FastExcel.date_num in Ruby -> Worksheet#write_number -> FFI :double -> libxlsxwriter worksheet_write_number",
-          dates: "FastExcel.lxw_datetime in Ruby -> Worksheet#write_datetime -> FFI Datetime struct -> libxlsxwriter worksheet_write_datetime",
+          dates: "FastExcel.lxw_date in Ruby -> Worksheet#write_datetime -> FFI Datetime struct -> libxlsxwriter worksheet_write_datetime",
           datetimes: "FastExcel.lxw_datetime in Ruby -> Worksheet#write_datetime -> FFI Datetime struct -> libxlsxwriter worksheet_write_datetime"
         }
       end
@@ -123,6 +135,7 @@ module FastExcel
           "Ruby classifies values and converts Time values to Excel serial doubles before crossing FFI.",
           "Date and DateTime values cross FFI as libxlsxwriter datetime structs.",
           "The decimal/XML text formatting for numeric cell values is owned by libxlsxwriter after the FFI call.",
+          "Conversion profiles prebuild input values so object construction is not counted as conversion time.",
           "Use the conversion_profiles numbers to decide whether Ruby-side date conversion is worth optimizing before considering Ryū or Dragonbox-style decimal formatting work."
         ]
       end
