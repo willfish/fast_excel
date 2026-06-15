@@ -9,6 +9,7 @@ module Libxlsxwriter
 
   libs = [File.expand_path("../../#{LIB_FILENAME}", __FILE__)]
   libs.unshift(File.join(Gem.loaded_specs['fast_excel'].extension_dir, LIB_FILENAME)) if Gem.loaded_specs['fast_excel']
+  libs.unshift(File.join(Gem.loaded_specs['uber_fast_excel'].extension_dir, LIB_FILENAME)) if Gem.loaded_specs['uber_fast_excel']
 
   ffi_lib(libs)
 
