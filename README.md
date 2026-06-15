@@ -103,6 +103,25 @@ workbook = FastExcel.open("large-report.xlsx", constant_memory: true)
 In constant memory mode, rows are flushed as they are written and earlier rows
 cannot be changed.
 
+### String Storage Strategy
+
+`constant_memory: true` uses inline strings through libxlsxwriter. This keeps
+large Rails exports bounded because the writer does not retain a global shared
+string table, but repeated labels can make the resulting worksheet XML larger.
+
+`constant_memory: false` uses `xl/sharedStrings.xml`. This can reduce file size
+for smaller workbooks with many repeated strings, but it allows the shared string
+table to grow with the workbook and should not be the default for large report
+exports.
+
+Use `benchmarks/shared_string_strategy.rb` to compare repeated, unique, and
+Trade Tariff-shaped mixed string data on the target runtime:
+
+```sh
+SHARED_STRING_PROFILE_ROWS=5000 \
+  direnv exec . bundle exec ruby benchmarks/shared_string_strategy.rb
+```
+
 ## Writing Values
 
 `write_value` detects numbers, dates, times, formulas, URLs, booleans, rich
