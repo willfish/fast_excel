@@ -4,6 +4,15 @@ Future release notes for `uber_fast_excel` are generated from conventional
 commits with Cocogitto. Historical `fast_excel` entries are preserved below for
 upgrade context.
 
+#### Version 0.6.0 - 15 jun 2026
+
+* Rename the maintained gem to `uber_fast_excel` while retaining the
+  `require "fast_excel"` compatibility path.
+* Return `nil` for missing worksheet lookups instead of wrapping a NULL
+  worksheet pointer (Thanks to @amberstarlight).
+* Accept arrays for horizontal and vertical worksheet page breaks.
+* Add Cocogitto, SimpleCov, Octocov, Dependabot, Nix, and release automation.
+
 #### Version 0.5.0 - 02 jan 2024
 
 * Support ruby 3.3
