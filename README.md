@@ -300,8 +300,14 @@ ci: check conventional commits
 
 `cog.toml` configures changelog generation from conventional commits and uses
 `v`-prefixed release tags. Publishing is handled by the release workflow when a
-`v*` tag is pushed; it builds `uber_fast_excel.gemspec` and pushes the gem to
-RubyGems with the `RUBYGEMS_API_KEY` secret.
+`v*` tag is pushed; it builds `uber_fast_excel.gemspec` and publishes through
+RubyGems trusted publishing.
+
+Before the first release, create a pending trusted publisher in RubyGems:
+
+- Gem name: `uber_fast_excel`
+- Repository: `willfish/fast_excel`
+- Workflow: `.github/workflows/release.yml`
 
 ## License
 
