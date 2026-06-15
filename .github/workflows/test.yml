@@ -31,7 +31,7 @@ jobs:
 
           echo "range=$RANGE" >> "$GITHUB_OUTPUT"
       - name: Conventional commit check
-        uses: cocogitto/cocogitto-action@v4.1.0
+        uses: cocogitto/cocogitto-action@v4.2.0
         with:
           command: check
           args: ${{ steps.commit-range.outputs.range }} --ignore-merge-commits
