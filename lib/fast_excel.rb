@@ -404,6 +404,8 @@ module FastExcel
 
     def get_worksheet_by_name(name)
       sheet = super(name)
+      return nil if sheet.to_ptr.null?
+
       sheet.workbook = self
 
       sheet

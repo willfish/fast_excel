@@ -19,4 +19,10 @@ describe "FastExcel::Worksheet" do
     assert_equal(error.message, "File '#{workbook.filename}' already exists. FastExcel can not open existing files, only create new files")
   end
 
+  it "returns nil when get_worksheet_by_name cannot find the worksheet" do
+    workbook = FastExcel.open(constant_memory: false)
+
+    assert_nil workbook.get_worksheet_by_name("Missing")
+  end
+
 end
